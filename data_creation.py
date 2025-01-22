@@ -1,12 +1,13 @@
 from datasets import load_dataset, Dataset
 import requests
 import pandas as pd
-import time
 import re
-OPENROUTER_API_URL = "https://openrouter.ai/api/v1/completions"
-OPENROUTER_API_KEY = "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" ##"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"
+from persuation_techniques import PersuasionTechnique
+import os
+from dotenv import load_dotenv
 
-from .persuation_techniques import PersuasionTechnique, sample_technique
+load_dotenv(override=True)
+
 def extract_question(conversation_string: str):
 
     pattern = r'\n\nHuman: (.*?)\n\nAssistant:'
@@ -66,8 +67,9 @@ Only output one high-quality modified inquiry:
         We build a single string with build_instruct_prompt() and then run .generate().
         """
         prompt_text = self.build_prompt()
+
         headers = {
-            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Authorization": f"Bearer {os.environ.get('OPENROUTER_API_KEY')}",
             # OpenRouter TOS typically requires a referer
             "HTTP-Referer": "https://mydomain.com"
         }
@@ -80,7 +82,7 @@ Only output one high-quality modified inquiry:
             "temperature": 0.7,
             "stop": ["### Instruction:","[{'role': 'system',", "(Explanation:"]
         }
-        response = requests.post(OPENROUTER_API_URL, headers=headers, json=payload)
+        response = requests.post(os.environ.get('OPENROUTER_API_URL', 'https://openrouter.ai/api/v1/completions'), headers=headers, json=payload)
         response.raise_for_status()
         data = response.json()
         if data:
@@ -101,31 +103,6 @@ Only output one high-quality modified inquiry:
       self.conversation_history.append({"role": "user", "content": self.build_persuasive_prompt()})
       response = self.generate_response(temperature=0.5)
 
-      return {"revised_question": response, "persuation_technique": persuation_technique}
-
-
-if __name__ == "main":
-    dataset = load_dataset("Anthropic/hh-rlhf")
-    dataset_red_team = load_dataset("Anthropic/hh-rlhf", data_dir = "red-team-attempts")
-    dataset = dataset["train"].to_pandas()
-    dataset["question"] = dataset["rejected"].apply(extract_question)
-    dataset_train = pd.read_pickle("dataset_final_0120.pkl")
-    for row_indexer in range(0,50000):
-        if "persuation_technique" not in dataset_train.columns or not isinstance(dataset_train["persuation_technique"][row_indexer],str) or len(dataset_train["revised_prompt"][row_indexer])<10:
-            print(f"Processing row {row_indexer}")
-            start_time = time.time()
-            persuation_technique = sample_technique()[0]
-            result = PersuasiveRevision(persuation_technique, dataset.loc[row_indexer, "question"]).process_question()
-
-            dataset_train.loc[row_indexer, "persuation_technique"] = result["persuation_technique"].name
-            dataset_train.loc[row_indexer, "revised_prompt"] = result["revised_question"]
-            # dataset.loc[row_indexer, "final_response"] = result["final_response"] 
-            end_time = time.time()
-            elapsed_time = end_time - start_time
-            print(f"Processing row {row_indexer} took {elapsed_time:.2f} seconds")
-            print("====== INITIAL PROMPT ======")
-            print(dataset_train.loc[row_indexer,"question"])
-            print("\n====== REVISED PROMPT ======")
-            print(result["revised_question"])
+      return {"revised_question": response, "persuation_technique": self.persuation_technique}
 
 
