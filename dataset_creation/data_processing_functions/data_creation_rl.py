@@ -117,7 +117,7 @@ class JudgementError(Exception):
     pass
 
 class AIJudge:
-    def __init__(self, api_key: str, config: Optional[JudgementConfig] = None):
+    def __init__(self, api_key: str, config: Optional[JudgementConfig] = JudgementConfig):
         self.api_key = api_key
         self.config = config or JudgementConfig()
 
