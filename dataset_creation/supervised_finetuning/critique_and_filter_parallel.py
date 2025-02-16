@@ -6,7 +6,7 @@ import re
 import time
 from typing import List, Dict, Optional
 from dataclasses import dataclass
-from data_creation import extract_question
+from dataset_creation.data_processing_functions.data_creation import extract_question
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 @dataclass

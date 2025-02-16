@@ -3,8 +3,8 @@ import pandas as pd
 import time
 import os
 import json
-from dataset_creation.persuasion_techniques.data_creation import extract_question
-from dataset_creation.rl_dpo.data_creation_rl import ai_judge, generate_response
+from dataset_creation.data_processing_functions.data_creation import extract_question
+from dataset_creation.data_processing_functions.data_creation_rl import ai_judge, generate_response
 from dotenv import load_dotenv
 from multiprocessing import Pool, cpu_count
 from functools import partial

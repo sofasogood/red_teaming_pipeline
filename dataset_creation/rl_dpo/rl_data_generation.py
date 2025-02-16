@@ -3,7 +3,7 @@ import pandas as pd
 import time
 import os
 import json
-from dataset_creation.rl_dpo.data_creation_rl import extract_question, generate_response, ai_judge
+from dataset_creation.data_processing_functions.data_creation_rl import extract_question, generate_response, ai_judge
 from dotenv import load_dotenv
 
 load_dotenv(override=True)

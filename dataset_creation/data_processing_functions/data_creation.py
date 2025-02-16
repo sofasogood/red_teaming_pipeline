@@ -2,7 +2,7 @@ from datasets import load_dataset, Dataset
 import requests
 import pandas as pd
 import re
-from persuation_techniques import PersuasionTechnique
+from dataset_creation.persuasion_techniques.persuation_techniques import PersuasionTechnique
 import os
 from dotenv import load_dotenv
 

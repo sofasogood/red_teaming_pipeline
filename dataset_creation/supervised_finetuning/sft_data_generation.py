@@ -1,8 +1,8 @@
 from datasets import load_dataset, Dataset
 import pandas as pd
 import time
-from persuation_techniques import sample_technique
-from data_creation import extract_question, PersuasiveRevision
+from dataset_creation.persuasion_techniques.persuation_techniques import sample_technique
+from dataset_creation.data_processing_functions.data_creation import extract_question, PersuasiveRevision
 import os
 import json
 

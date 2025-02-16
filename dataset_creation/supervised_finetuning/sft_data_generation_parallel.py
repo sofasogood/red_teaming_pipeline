@@ -6,8 +6,8 @@ from typing import Dict, Any
 import pandas as pd
 from tqdm import tqdm
 from datasets import load_dataset
-from persuation_techniques import sample_technique
-from data_creation import extract_question, PersuasiveRevision
+from dataset_creation.persuasion_techniques.persuation_techniques import sample_technique
+from dataset_creation.data_processing_functions.data_creation import extract_question, PersuasiveRevision
 import os
 def process_single_row(row_data: Dict[str, Any], model_name: str = "microsoft/wizardlm-2-8x22b") -> Dict[str, Any]:
     """Process a single row of the dataset"""
