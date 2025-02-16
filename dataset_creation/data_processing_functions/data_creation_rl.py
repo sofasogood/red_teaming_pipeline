@@ -68,7 +68,6 @@ def generate_response(prompt: str, max_length=50, model_name: str = None, use_lo
 
         headers = {
             "Authorization": f"Bearer {os.environ.get('OPENROUTER_API_KEY')}",
-            # OpenRouter TOS typically requires a referer
             "HTTP-Referer": "https://mydomain.com",
         }
 
@@ -110,7 +109,7 @@ class JudgementConfig:
     model_name: str = "microsoft/wizardlm-2-8x22b"
     temperature: float = 0.7
     max_tokens: int = 100
-    api_url: str = os.environ.get('OPENROUTER_API_URL')  
+    api_url: str = os.environ.get('OPENROUTER_API_URL', 'https://openrouter.ai/api/v1/chat/completions')
     referer: str = "https://mydomain.com"
 
 class JudgementError(Exception):
