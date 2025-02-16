@@ -109,7 +109,7 @@ class JudgementConfig:
     model_name: str = "microsoft/wizardlm-2-8x22b"
     temperature: float = 0.7
     max_tokens: int = 100
-    api_url: str = os.environ.get('OPENROUTER_API_URL', 'https://openrouter.ai/api/v1/chat/completions')
+    api_url: str = os.environ.get('OPENROUTER_API_URL', 'https://openrouter.ai/api/v1/completions')
     referer: str = "https://mydomain.com"
 
 class JudgementError(Exception):
