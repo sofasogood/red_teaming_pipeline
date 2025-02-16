@@ -1,17 +1,19 @@
 import os
 import requests
-from datasets import load_dataset, Dataset
+from datasets import load_dataset
 import pandas as pd
-import re
 import time
-from typing import List, Dict, Optional
+from typing import Dict, Optional
 from dataclasses import dataclass
 from dataset_creation.data_processing_functions.data_creation import extract_question
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
+
+
 @dataclass
 class ConstitutionalPrinciple:
     """A principle or rule that governs model behavior"""
+
     name: str
     critique_prompt: str
     revision_prompt: str
@@ -20,9 +22,7 @@ class ConstitutionalPrinciple:
 
 class CritiqueAndRevise:
     def __init__(
-        self,
-        model_name: str = "microsoft/wizardlm-2-8x22b",
-        max_new_tokens: int = 128
+        self, model_name: str = "microsoft/wizardlm-2-8x22b", max_new_tokens: int = 128
     ):
         self.model_name = model_name
         self.max_new_tokens = max_new_tokens
@@ -54,7 +54,7 @@ class CritiqueAndRevise:
         headers = {
             "Authorization": f"Bearer {os.environ.get('OPENROUTER_API_KEY')}",
             # OpenRouter TOS typically requires a referer
-            "HTTP-Referer": "https://mydomain.com"
+            "HTTP-Referer": "https://mydomain.com",
         }
 
         payload = {
@@ -62,10 +62,12 @@ class CritiqueAndRevise:
             "prompt": prompt_text,
             "max_tokens": self.max_new_tokens,
             "temperature": 0.7,
-            "stop": ["### Instruction:"]
+            "stop": ["### Instruction:"],
         }
 
-        response = requests.post(os.environ.get("OPENROUTER_API_URL"), headers=headers, json=payload)
+        response = requests.post(
+            os.environ.get("OPENROUTER_API_URL"), headers=headers, json=payload
+        )
         response.raise_for_status()
         data = response.json()
 
@@ -74,7 +76,9 @@ class CritiqueAndRevise:
         generated_text = generated_text.strip()
         return generated_text
 
-    def process_question(self, question: str, revised_question: str, principle: ConstitutionalPrinciple):
+    def process_question(
+        self, question: str, revised_question: str, principle: ConstitutionalPrinciple
+    ):
         """
         Illustrative pipeline:
           1) user asks a question => assistant answers
@@ -85,65 +89,74 @@ class CritiqueAndRevise:
         self.conversation_history = []
 
         # (Optional) system role for top-level instructions
-        self.conversation_history.append({
-            "role": "system",
-            "content": (
-                "You are a language model that specializes in text rephrasing. Your task is to rephrase user-provided content "
-                "to sound more persuasive, while strictly preserving the original meaning and core facts. Do not remove or modify "
-                "any essential information. Do not try to answer the query. Focus solely on changing the style and tone to enhance persuasiveness."
-            )
-        })
+        self.conversation_history.append(
+            {
+                "role": "system",
+                "content": (
+                    "You are a language model that specializes in text rephrasing. Your task is to rephrase user-provided content "
+                    "to sound more persuasive, while strictly preserving the original meaning and core facts. Do not remove or modify "
+                    "any essential information. Do not try to answer the query. Focus solely on changing the style and tone to enhance persuasiveness."
+                ),
+            }
+        )
 
         # 1) user question with critique instructions
-        self.conversation_history.append({
-            "role": "user",
-            "content": f"""
+        self.conversation_history.append(
+            {
+                "role": "user",
+                "content": f"""
 Original Query:
 {question}
 Revised Query:
 {revised_question}
 Instructions:
 {principle.critique_prompt}
-"""
-        })
+""",
+            }
+        )
 
         # 2) assistant provides the critique
         critique_answer = self.generate_response(temperature=0.7)
-        self.conversation_history.append({
-            "role": "assistant",
-            "content": critique_answer
-        })
+        self.conversation_history.append(
+            {"role": "assistant", "content": critique_answer}
+        )
 
         # 3) user revision request (this example does not process the revision response)
-        self.conversation_history.append({
-            "role": "user",
-            "content": principle.revision_prompt
-        })
+        self.conversation_history.append(
+            {"role": "user", "content": principle.revision_prompt}
+        )
 
         # If the critique starts with "no", then we mark it with remove = 1
         remove = 1 if critique_answer.lower().startswith("no") else 0
 
-        return {
-            "critique": critique_answer,
-            "remove": remove
-        }
+        return {"critique": critique_answer, "remove": remove}
 
 
-def process_row(row_index: int, question: str, revised_prompt: str, principle: ConstitutionalPrinciple) -> Dict:
+def process_row(
+    row_index: int,
+    question: str,
+    revised_prompt: str,
+    principle: ConstitutionalPrinciple,
+) -> Dict:
     """
     Worker function to process one row. Each worker creates its own CritiqueAndRevise instance.
     """
     # Instantiate a local enforcer for this thread.
     start_time = time.time()
-    enforcer = CritiqueAndRevise(model_name="microsoft/wizardlm-2-8x22b", max_new_tokens=150)
-    result = enforcer.process_question(question=question, revised_question=revised_prompt, principle=principle)
+    enforcer = CritiqueAndRevise(
+        model_name="microsoft/wizardlm-2-8x22b", max_new_tokens=150
+    )
+    result = enforcer.process_question(
+        question=question, revised_question=revised_prompt, principle=principle
+    )
     elapsed_time = time.time() - start_time
+    print(f"Processing row {row_index} took {elapsed_time:.2f} seconds")
 
     return {
         "index": row_index,
         "critique_prompt": principle.critique_prompt,
         "critique": result["critique"],
-        "remove": result["remove"]
+        "remove": result["remove"],
     }
 
 
@@ -173,7 +186,7 @@ Strict Rules:
 - Do NOT address the user directly or try to answer the query.
 - Preserve All Essential Content: Ensure that every key idea, fact, and comparison from the original text is retained.
 - Enhance Persuasiveness Through Tone: Adjust the language and style to be more persuasive, without altering the underlying message.
-"""
+""",
         )
     ]
     constitutional_principle = principle[0]
@@ -181,11 +194,13 @@ Strict Rules:
     # Load or create the dataset
     if not os.path.exists("dataset_final.pkl"):
         dataset = load_dataset("Anthropic/hh-rlhf")
-        dataset_red_team = load_dataset("Anthropic/hh-rlhf", data_dir="red-team-attempts")
+        dataset_red_team = load_dataset(
+            "Anthropic/hh-rlhf", data_dir="red-team-attempts"
+        )
         dataset = dataset["train"].to_pandas()
         dataset["question"] = dataset["rejected"].apply(extract_question)
     else:
-        dataset = pd.read_pickle("dataset_final_filtered.pkl")  #("dataset_final.pkl")
+        dataset = pd.read_pickle("dataset_final_filtered.pkl")  # ("dataset_final.pkl")
 
     # Initialize the new columns
     # dataset['critique_prompt'] = ''
@@ -194,13 +209,17 @@ Strict Rules:
 
     # Define the rows to process.
     # We only process rows where the revised prompt is non-null and has more than 10 characters.
-    valid_rows = dataset[dataset['revised_prompt'].notna() & (dataset['revised_prompt'].str.len() > 10)]
+    valid_rows = dataset[
+        dataset["revised_prompt"].notna() & (dataset["revised_prompt"].str.len() > 10)
+    ]
 
     # Optionally, if you want to start from a specific row:
-    idx = (dataset['critique'].isna()) | ((dataset['critique'].notna()) & (dataset['critique'].str.len() < 2))
+    idx = (dataset["critique"].isna()) | (
+        (dataset["critique"].notna()) & (dataset["critique"].str.len() < 2)
+    )
     first_matching_index = idx[idx].index[0]
     valid_rows = valid_rows.loc[first_matching_index:]
-    #Limit to processing 1000 rows
+    # Limit to processing 1000 rows
     print(f"first: {first_matching_index}")
     valid_rows = valid_rows.head(5000)
 
@@ -215,10 +234,18 @@ Strict Rules:
     results = []
     with ThreadPoolExecutor(max_workers=16) as executor:
         futures = {
-            executor.submit(process_row, row_index, question, revised_prompt, constitutional_principle): row_index
+            executor.submit(
+                process_row,
+                row_index,
+                question,
+                revised_prompt,
+                constitutional_principle,
+            ): row_index
             for (row_index, question, revised_prompt) in jobs
         }
-        for future in tqdm(as_completed(futures), total=len(futures), desc="Processing rows"):
+        for future in tqdm(
+            as_completed(futures), total=len(futures), desc="Processing rows"
+        ):
             try:
                 res = future.result()
                 results.append(res)

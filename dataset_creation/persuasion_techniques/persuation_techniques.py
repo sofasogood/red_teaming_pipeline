@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import random
 from typing import List
 
+
 @dataclass
 class PersuasionTechnique:
     """
@@ -11,6 +12,7 @@ class PersuasionTechnique:
       - The broader strategy category
       - A flag indicating 'Ethical' vs. 'Unethical'
     """
+
     technique_id: int
     name: str
     strategy: str
@@ -491,7 +493,9 @@ ALL_TECHNIQUES: List[PersuasionTechnique] = [
 ]
 
 
-def sample_technique(n: int = 1, only_ethical: bool = False, only_unethical: bool = False) -> List[PersuasionTechnique]:
+def sample_technique(
+    n: int = 1, only_ethical: bool = False, only_unethical: bool = False
+) -> List[PersuasionTechnique]:
     """
     Returns a random sample of persuasion techniques.
 
@@ -510,4 +514,3 @@ def sample_technique(n: int = 1, only_ethical: bool = False, only_unethical: boo
 
     # Just return a random sample of size n (or fewer if the pool is smaller)
     return random.sample(pool, k=min(n, len(pool)))
-
