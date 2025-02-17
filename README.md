@@ -1,7 +1,11 @@
 # Red-teaming with Persuasive Rephrasing
 LLM-Assisted Red Teaming
+
+This repository offers an end‐to‐end, LLM‐assisted red teaming framework that leverages persuasive rephrasing to probe and improve AI safety. At its core, the project uses a structured taxonomy of persuasion techniques to transform ordinary prompts into adversarial examples that challenge model guardrails. Results demonstrated in LessWrong article [here](https://www.lesswrong.com/posts/NNanHJrMDmHk7sYM7/can-persuasion-break-ai-safety-exploring-the-interplay).
+
+
 ## Functionality
-This python library contains 5 key functionalities.
+The toolkit is organized into five key functionalities:
 ```mermaid
 flowchart TB
     subgraph Core["Core Functions"]
@@ -95,6 +99,7 @@ This library demonstrates a pipeline for creating a comprehensive dataset of per
 
 ## 2. SFT training notebook
 notebook: sft_model_training.ipynb
+
 This notebook demonstrates a pipeline for fine-tuning a quantized language model for persuasive revision generation. It uses the following steps:
 
 1. **Load a pre-trained language model**:
@@ -104,7 +109,7 @@ Uses the Mistral-7b-v0.3-bnb-4bit model, quantized with BitsAndBytes, and applie
 Loads a pickled dataset from Google Drive, filters out invalid entries, and selects examples with sufficient content for revision and critique.
 
 3. **Generate persuasive prompts**:
-Processes the dataset in parallel to generate persuasive prompts using custom persuasion techniques.
+Processes the dataset in parallel to generate persuasive prompts using custom persuasion techniques from red_teaming_pipeline.
 
 4. **Train the model**:
 Fine-tunes the model using Hugging Face's Trainer with a custom training loop, including a defined prompt template and wandb integration for logging.
@@ -115,6 +120,7 @@ Saves the fine-tuned model, training state, and checkpoints to Google Drive for 
 
 ## 3. RL-DPO training dataset generation notebook
 notebook: rl_dpo_training_data_creation.ipynb
+
 This notebook demonstrates a pipeline for red teaming an AI model for safety. It uses the following steps:
 
 1. **Load a pre-trained language model:** The notebook uses the Mistral-7b-v0.3-bnb-4bit model, quantized for inference using BitsAndBytes. Additionally, it loads LoRA adapter weights for fine-tuning.
@@ -126,6 +132,7 @@ This notebook demonstrates a pipeline for red teaming an AI model for safety. It
 
 ## 4. RL-DPO training
 notebook: rl_dpo_training.ipynb
+
 This notebook demonstrates a pipeline for fine-tuning a quantized AI model using Direct Preference Optimization (DPO) with LoRA adapters. It follows these steps:
 
 1. **Load a Pre-trained Model**:
@@ -144,10 +151,20 @@ Periodically saves model checkpoints and logs to a specified directory in Google
 
 ## 5. Model FastAPI interface
 notebook: model_API_notebook.ipynb
- Fine-tuned Mistral-7b Chatbot with LoRA and Red Teaming
 
-This notebook demonstrates fine-tuning the Mistral-7b language model using Low-Rank Adaptation (LoRA) for AI safety and red teaming purposes. It integrates with a red teaming pipeline and serves the model through a FastAPI interface.
+This notebook demonstrates a pipeline for hosting an AI model for chat completions. It uses the following steps:
 
+1. **Load a pre-trained language model**:
+Loads the Mistral-7b-v0.3-bnb-4bit model, quantized for inference using BitsAndBytes, and applies LoRA adapter weights for fine-tuning.
+
+2. **Set up the API**:
+Implements a FastAPI server with an endpoint (/chat/completions) that accepts chat messages and returns generated responses.
+
+3. **Generate responses**:
+Builds an instruction prompt from the input messages and generates a text response using the loaded model.
+
+4. **Expose the server**:
+Hosts the API using uvicorn and provides commands to expose the local server via bore-cli.
 
 ## Requirements
 
@@ -155,4 +172,6 @@ This notebook demonstrates fine-tuning the Mistral-7b language model using Low-R
 - Libraries: `unsloth`, `litellm`, `fastapi`, `uvicorn`, `pyngrok`, `accelerate`, `transformers`, `nest-asyncio`, `peft`, `torch`
 - Google Colab environment or similar with GPU access
 - A dataset for fine-tuning (e.g., from the `Anthropic/hh-rlhf`)
+
+Note: All notebooks integrate the red teaming pipeline, cloning the red_teaming_pipeline repository and installing its dependencies to leverage its data processing utilities.
 
