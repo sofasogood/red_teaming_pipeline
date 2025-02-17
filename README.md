@@ -1,7 +1,7 @@
 # Red-teaming with Persuasive Rephrasing
 LLM-Assisted Red Teaming
 
-This repository offers an end‐to‐end, LLM‐assisted red teaming framework that leverages persuasive rephrasing to probe and improve AI safety. At its core, the project uses a structured taxonomy of persuasion techniques to transform ordinary prompts into adversarial examples that challenge model guardrails. Results demonstrated in LessWrong article [here](https://www.lesswrong.com/posts/NNanHJrMDmHk7sYM7/can-persuasion-break-ai-safety-exploring-the-interplay).
+This repository offers an end‐to‐end, LLM‐assisted red teaming framework that leverages persuasive rephrasing to probe and improve AI safety. At its core, the project uses a structured taxonomy of persuasion techniques to transform ordinary prompts into adversarial examples that challenge model guardrails. Results demonstrated in article [here](https://www.lesswrong.com/posts/NNanHJrMDmHk7sYM7/can-persuasion-break-ai-safety-exploring-the-interplay).
 
 
 ## Functionality
@@ -165,6 +165,8 @@ Builds an instruction prompt from the input messages and generates a text respon
 
 4. **Expose the server**:
 Hosts the API using uvicorn and provides commands to expose the local server via bore-cli.
+
+This model hosted via FastAPI is evaluated using a forked version of jailbreakbench with some modifications. Read article [here](https://www.lesswrong.com/posts/NNanHJrMDmHk7sYM7/can-persuasion-break-ai-safety-exploring-the-interplay) if you're interested in the results!
 
 ## Requirements
 
